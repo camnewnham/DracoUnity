@@ -193,17 +193,21 @@ public unsafe class DracoMeshLoader
 		Vector3[] newVertices = new Vector3[tmpMesh->numVertices];
 		Profiler.EndSample();
 
+		bool isPtCloud = newTriangles.Length == 0;
 		Vector2[] newUVs = null;
 		Vector3[] newNormals = null;
 		Color[] newColors = null;
 		Vector4[] newWeights = null;
 		int[] newJoints = null;
 
-		Profiler.BeginSample("CreateMeshIndices");
-		byte* indicesSrc = (byte*)tmpMesh->indices;
-		var indicesPtr = UnsafeUtility.AddressOf(ref newTriangles[0]);
-		UnsafeUtility.MemCpy(indicesPtr,indicesSrc,newTriangles.Length*4);
-		Profiler.EndSample();
+		if (isPtCloud)
+		{
+			Profiler.BeginSample("CreateMeshIndices");
+			byte* indicesSrc = (byte*)tmpMesh->indices;
+			var indicesPtr = UnsafeUtility.AddressOf(ref newTriangles[0]);
+			UnsafeUtility.MemCpy(indicesPtr, indicesSrc, newTriangles.Length * 4);
+			Profiler.EndSample();
+		}
 
 		Profiler.BeginSample("CreateMeshPositions");
 		byte* posaddr = (byte*)tmpMesh->position;
@@ -279,8 +283,22 @@ public unsafe class DracoMeshLoader
 #endif
 
 		mesh.vertices = newVertices;
-		mesh.SetTriangles(newTriangles,0,true);
-		if (newNormals!=null) {
+
+		if (isPtCloud)
+		{
+			int[] indices = new int[newVertices.Length];
+			for (int i=0;i<newVertices.Length;i++)
+			{
+				indices[i] = i;
+			}
+			mesh.SetIndices(indices, MeshTopology.Points, 0);
+		}
+		else
+		{
+			mesh.SetTriangles(newTriangles, 0, true);
+		}
+		if (newNormals != null)
+		{
 			mesh.normals = newNormals;
 		}
 		if (newUVs!=null) {
