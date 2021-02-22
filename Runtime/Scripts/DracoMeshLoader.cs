@@ -200,7 +200,7 @@ public unsafe class DracoMeshLoader
 		Vector4[] newWeights = null;
 		int[] newJoints = null;
 
-		if (isPtCloud)
+		if (!isPtCloud)
 		{
 			Profiler.BeginSample("CreateMeshIndices");
 			byte* indicesSrc = (byte*)tmpMesh->indices;
